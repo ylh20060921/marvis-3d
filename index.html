@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Marvis 3D 妯″瀷搴?/title>
+<title>Marvis 3D 模型库</title>
 <style>
 * { margin: 0; padding: 0; box-sizing: border-box; }
 body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f0f14; color: #e0e0e0; min-height: 100vh; }
@@ -92,15 +92,15 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 <div class="status-bar" id="statusBar"></div>
 <div class="app">
   <div class="header">
-    <h1>Marvis 3D 妯″瀷搴?/h1>
-    <span class="subtitle">鍏变韩 路 棰勮 路 鍗忎綔</span>
+    <h1>Marvis 3D 模型库</h1>
+    <span class="subtitle">共享 · 预览 · 协作</span>
   </div>
 
   <div class="nav" id="nav">
-    <button class="nav-btn active" data-tab="models">3D 妯″瀷</button>
-    <button class="nav-btn" data-tab="notes">绗旇</button>
-    <button class="nav-btn" data-tab="todos">寰呭姙</button>
-    <button class="nav-btn" data-tab="bookmarks">涔︾</button>
+    <button class="nav-btn active" data-tab="models">3D 模型</button>
+    <button class="nav-btn" data-tab="notes">笔记</button>
+    <button class="nav-btn" data-tab="todos">待办</button>
+    <button class="nav-btn" data-tab="bookmarks">书签</button>
   </div>
 
   <div id="tabContent"></div>
@@ -108,7 +108,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-
 
 <div class="modal" id="modal">
   <div class="modal-content" id="modalContent">
-    <button class="modal-close" onclick="closeModal()">脳</button>
+    <button class="modal-close" onclick="closeModal()">×</button>
     <div id="modalBody"></div>
   </div>
 </div>
@@ -170,7 +170,7 @@ async function githubDelete(path, sha) {
 
 // === Data Operations ===
 async function loadData() {
-  showStatus('鍔犺浇涓?..');
+  showStatus('加载中...');
   try {
     appData = await githubGet('data/app_data.json');
     if (!appData) {
@@ -183,7 +183,7 @@ async function loadData() {
     appData.bookmarks = appData.bookmarks || [];
     appData.folders = appData.folders || [];
   } catch(e) {
-    toast('鍔犺浇搴旂敤鏁版嵁澶辫触: ' + e.message, 'error');
+    toast('加载应用数据失败: ' + e.message, 'error');
   }
   hideStatus();
 }
@@ -197,7 +197,7 @@ async function saveData() {
     await githubPut('data/app_data.json', appData, sha);
     return true;
   } catch(e) {
-    toast('淇濆瓨澶辫触: ' + e.message, 'error');
+    toast('保存失败: ' + e.message, 'error');
     return false;
   }
 }
@@ -224,7 +224,7 @@ async function saveModels() {
     await githubPut('data/models.json', models, sha);
     return true;
   } catch(e) {
-    toast('淇濆瓨妯″瀷鍒楄〃澶辫触: ' + e.message, 'error');
+    toast('保存模型列表失败: ' + e.message, 'error');
     return false;
   }
 }
@@ -287,12 +287,12 @@ function renderModels() {
 
   content.innerHTML = `
     <div class="toolbar">
-      <input type="text" id="searchInput" placeholder="鎼滅储妯″瀷..." oninput="renderModels()">
-      <button class="btn btn-primary" onclick="showUpload()">涓婁紶妯″瀷</button>
-      <button class="btn btn-secondary" onclick="showAddFolder()">+ 鏂囦欢澶?/button>
+      <input type="text" id="searchInput" placeholder="搜索模型..." oninput="renderModels()">
+      <button class="btn btn-primary" onclick="showUpload()">上传模型</button>
+      <button class="btn btn-secondary" onclick="showAddFolder()">+ 文件夹</button>
     </div>
     ${appData.folders.length ? `<div class="folder-tree">
-      <span class="folder-chip${currentFolder === null ? ' active' : ''}" onclick="setFolder(null)">鍏ㄩ儴</span>
+      <span class="folder-chip${currentFolder === null ? ' active' : ''}" onclick="setFolder(null)">全部</span>
       ${folderChips}
     </div>` : ''}
     <div class="grid" id="modelGrid"></div>
@@ -303,7 +303,7 @@ function renderModels() {
   const filtered2 = q ? filtered.filter(m => m.name.toLowerCase().includes(q)) : filtered;
 
   if (filtered2.length === 0) {
-    grid.innerHTML = `<div class="empty"><div class="icon">馃摝</div><p>鏆傛棤妯″瀷</p></div>`;
+    grid.innerHTML = `<div class="empty"><div class="icon">📦</div><p>暂无模型</p></div>`;
     return;
   }
 
@@ -320,13 +320,13 @@ function renderModels() {
         <div class="card-meta">
           <span>${m.type.toUpperCase()}</span>
           ${sizeStr ? `<span>${sizeStr}</span>` : ''}
-          ${m.folder ? `<span>馃搧 ${m.folder}</span>` : ''}
+          ${m.folder ? `<span>📁 ${m.folder}</span>` : ''}
         </div>
       </div>
       <div class="card-actions" onclick="event.stopPropagation()">
-        <button class="btn btn-secondary btn-sm" onclick="previewModel('${m.id}')">棰勮</button>
-        <button class="btn btn-secondary btn-sm" onclick="showMoveModel('${m.id}')">绉诲姩</button>
-        <button class="btn btn-danger btn-sm" onclick="deleteModel('${m.id}')">鍒犻櫎</button>
+        <button class="btn btn-secondary btn-sm" onclick="previewModel('${m.id}')">预览</button>
+        <button class="btn btn-secondary btn-sm" onclick="showMoveModel('${m.id}')">移动</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteModel('${m.id}')">删除</button>
       </div>
     </div>`;
   }).join('');
@@ -339,23 +339,23 @@ function showUpload() {
   const modalContent = document.getElementById('modalContent');
   modalContent.classList.remove('fullscreen');
   document.getElementById('modalBody').innerHTML = `
-    <h2>涓婁紶 3D 妯″瀷</h2>
+    <h2>上传 3D 模型</h2>
     <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
-      <div style="font-size:48px;margin-bottom:12px;opacity:0.2">馃摛</div>
-      <p>鐐瑰嚮鎴栨嫋鎷?HTML 妯″瀷鏂囦欢</p>
-      <p style="font-size:12px;color:#555;margin-top:8px">鏀寔 .html 鏂囦欢</p>
+      <div style="font-size:48px;margin-bottom:12px;opacity:0.2">📤</div>
+      <p>点击或拖拽 HTML 模型文件</p>
+      <p style="font-size:12px;color:#555;margin-top:8px">支持 .html 文件</p>
       <input type="file" id="fileInput" accept=".html" multiple>
     </div>
     <div class="form-group" style="margin-top:12px">
-      <label>鎵€灞炴枃浠跺す</label>
+      <label>所属文件夹</label>
       <select id="uploadFolder">
-        <option value="">鏃?/option>
+        <option value="">无</option>
         ${appData.folders.map(f => `<option value="${f}">${f}</option>`).join('')}
       </select>
     </div>
     <div id="uploadProgress" style="margin-top:10px;display:none"></div>
     <div class="form-row" style="margin-top:16px">
-      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
+      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
     </div>
   `;
   modal.classList.add('show');
@@ -375,14 +375,14 @@ async function handleFiles(files) {
 
   for (const file of files) {
     if (!file.name.endsWith('.html')) continue;
-    progress.textContent = `涓婁紶涓? ${file.name}...`;
+    progress.textContent = `上传中: ${file.name}...`;
     try {
       await uploadFile(file, folder);
     } catch(e) {
-      toast(`${file.name} 涓婁紶澶辫触: ${e.message}`, 'error');
+      toast(`${file.name} 上传失败: ${e.message}`, 'error');
     }
   }
-  progress.textContent = `瀹屾垚锛佸叡涓婁紶 ${files.length} 涓枃浠禶;
+  progress.textContent = `完成！共上传 ${files.length} 个文件`;
   setTimeout(() => { closeModal(); renderModels(); }, 800);
 }
 
@@ -407,17 +407,17 @@ async function showMoveModel(id) {
   const modalContent = document.getElementById('modalContent');
   modalContent.classList.remove('fullscreen');
   document.getElementById('modalBody').innerHTML = `
-    <h2>绉诲姩 "${m.name}"</h2>
+    <h2>移动 "${m.name}"</h2>
     <div class="form-group">
-      <label>鐩爣鏂囦欢澶?/label>
+      <label>目标文件夹</label>
       <select id="moveFolder">
-        <option value="">鏃?/option>
+        <option value="">无</option>
         ${appData.folders.map(f => `<option value="${f}" ${m.folder === f ? 'selected' : ''}>${f}</option>`).join('')}
       </select>
     </div>
     <div class="form-row">
-      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
-      <button class="btn btn-primary" onclick="moveModel('${id}')">纭畾</button>
+      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="moveModel('${id}')">确定</button>
     </div>
   `;
   modal.classList.add('show');
@@ -430,11 +430,11 @@ async function moveModel(id) {
   await saveModels();
   closeModal();
   renderModels();
-  toast('宸茬Щ鍔?);
+  toast('已移动');
 }
 
 async function deleteModel(id) {
-  if (!confirm('纭畾鍒犻櫎姝ゆā鍨嬶紵')) return;
+  if (!confirm('确定删除此模型？')) return;
   const m = models.find(x => x.id === id);
   if (!m) return;
   try {
@@ -449,7 +449,7 @@ async function deleteModel(id) {
   models = models.filter(x => x.id !== id);
   await saveModels();
   renderModels();
-  toast('宸插垹闄?);
+  toast('已删除');
 }
 
 // === Notes Tab ===
@@ -457,8 +457,8 @@ function renderNotes() {
   const content = document.getElementById('tabContent');
   content.innerHTML = `
     <div class="toolbar">
-      <input type="text" id="noteSearch" placeholder="鎼滅储绗旇..." oninput="renderNotes()">
-      <button class="btn btn-primary" onclick="showAddNote()">鏂板缓绗旇</button>
+      <input type="text" id="noteSearch" placeholder="搜索笔记..." oninput="renderNotes()">
+      <button class="btn btn-primary" onclick="showAddNote()">新建笔记</button>
     </div>
     <div class="grid" id="noteGrid"></div>
   `;
@@ -467,12 +467,12 @@ function renderNotes() {
   const filtered = q ? appData.notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)) : appData.notes;
 
   if (filtered.length === 0) {
-    grid.innerHTML = `<div class="empty"><div class="icon">馃摑</div><p>鏆傛棤绗旇</p></div>`;
+    grid.innerHTML = `<div class="empty"><div class="icon">📝</div><p>暂无笔记</p></div>`;
     return;
   }
   grid.innerHTML = filtered.map(n => `
     <div class="note-card" onclick="showEditNote('${n.id}')">
-      <h3>${n.title || '鏃犳爣棰?}</h3>
+      <h3>${n.title || '无标题'}</h3>
       <p>${n.content || ''}</p>
       <div style="margin-top:8px;font-size:11px;color:#555">${new Date(n.updated).toLocaleString('zh-CN')}</div>
     </div>
@@ -482,12 +482,12 @@ function renderNotes() {
 function showAddNote() {
   document.getElementById('modalContent').classList.remove('fullscreen');
   document.getElementById('modalBody').innerHTML = `
-    <h2>鏂板缓绗旇</h2>
-    <div class="form-group"><input type="text" id="noteTitle" placeholder="鏍囬"></div>
-    <div class="form-group"><textarea id="noteContent" placeholder="鍐呭..." rows="6"></textarea></div>
+    <h2>新建笔记</h2>
+    <div class="form-group"><input type="text" id="noteTitle" placeholder="标题"></div>
+    <div class="form-group"><textarea id="noteContent" placeholder="内容..." rows="6"></textarea></div>
     <div class="form-row">
-      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
-      <button class="btn btn-primary" onclick="saveNote()">淇濆瓨</button>
+      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveNote()">保存</button>
     </div>
   `;
   document.getElementById('modal').classList.add('show');
@@ -498,13 +498,13 @@ function showEditNote(id) {
   if (!n) return;
   document.getElementById('modalContent').classList.remove('fullscreen');
   document.getElementById('modalBody').innerHTML = `
-    <h2>缂栬緫绗旇</h2>
+    <h2>编辑笔记</h2>
     <div class="form-group"><input type="text" id="noteTitle" value="${n.title || ''}"></div>
     <div class="form-group"><textarea id="noteContent" rows="6">${n.content || ''}</textarea></div>
     <div class="form-row">
-      <button class="btn btn-danger" onclick="deleteNote('${id}')">鍒犻櫎</button>
-      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
-      <button class="btn btn-primary" onclick="saveNote('${id}')">淇濆瓨</button>
+      <button class="btn btn-danger" onclick="deleteNote('${id}')">删除</button>
+      <button class="btn btn-secondary" onclick="closeModal()">取消</button>
+      <button class="btn btn-primary" onclick="saveNote('${id}')">保存</button>
     </div>
   `;
   document.getElementById('modal').classList.add('show');
@@ -513,7 +513,7 @@ function showEditNote(id) {
 async function saveNote(id) {
   const title = document.getElementById('noteTitle').value.trim();
   const content = document.getElementById('noteContent').value.trim();
-  if (!title && !content) { toast('鏍囬鎴栧唴瀹逛笉鑳藉叏绌?); return; }
+  if (!title && !content) { toast('标题或内容不能全空'); return; }
   if (id) {
     const n = appData.notes.find(x => x.id === id);
     if (n) { n.title = title; n.content = content; n.updated = new Date().toISOString(); }
@@ -524,7 +524,7 @@ async function saveNote(id) {
 }
 
 async function deleteNote(id) {
-  if (!confirm('鍒犻櫎姝ょ瑪璁帮紵')) return;
+  if (!confirm('删除此笔记？')) return;
   appData.notes = appData.notes.filter(x => x.id !== id);
   await saveData();
   closeModal();
@@ -536,8 +536,8 @@ function renderTodos() {
   const content = document.getElementById('tabContent');
   content.innerHTML = `
     <div class="toolbar">
-      <input type="text" id="todoInput" placeholder="娣诲姞寰呭姙..." onkeydown="if(event.key==='Enter')addTodo()">
-      <button class="btn btn-primary" onclick="addTodo()">娣诲姞</button>
+      <input type="text" id="todoInput" placeholder="添加待办..." onkeydown="if(event.key==='Enter')addTodo()">
+      <button class="btn btn-primary" onclick="addTodo()">添加</button>
     </div>
     <div id="todoList"></div>
   `;
@@ -546,20 +546,20 @@ function renderTodos() {
   const completed = appData.todos.filter(t => t.done);
 
   if (appData.todos.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="icon">鉁?/div><p>鏆傛棤寰呭姙</p></div>`;
+    list.innerHTML = `<div class="empty"><div class="icon">✅</div><p>暂无待办</p></div>`;
     return;
   }
   list.innerHTML = incomplete.map(t => `
     <div class="todo-item">
       <input type="checkbox" onchange="toggleTodo('${t.id}')">
       <span class="todo-text">${t.text}</span>
-      <button class="todo-del" onclick="deleteTodo('${t.id}')">脳</button>
+      <button class="todo-del" onclick="deleteTodo('${t.id}')">×</button>
     </div>
-  `).join('') + (completed.length ? `<div style="margin-top:16px;font-size:12px;color:#555">宸插畬鎴?(${completed.length})</div>` + completed.map(t => `
+  `).join('') + (completed.length ? `<div style="margin-top:16px;font-size:12px;color:#555">已完成 (${completed.length})</div>` + completed.map(t => `
     <div class="todo-item" style="opacity:0.5">
       <input type="checkbox" checked onchange="toggleTodo('${t.id}')">
       <span class="todo-text done">${t.text}</span>
-      <button class="todo-del" onclick="deleteTodo('${t.id}')">脳</button>
+      <button class="todo-del" onclick="deleteTodo('${t.id}')">×</button>
     </div>
   `).join('') : '');
 }
@@ -591,21 +591,21 @@ function renderBookmarks() {
   const content = document.getElementById('tabContent');
   content.innerHTML = `
     <div class="toolbar">
-      <input type="text" id="bmUrl" placeholder="绮樿创閾炬帴...">
-      <input type="text" id="bmTitle" placeholder="鏍囬" style="max-width:200px">
-      <button class="btn btn-primary" onclick="addBookmark()">娣诲姞</button>
+      <input type="text" id="bmUrl" placeholder="粘贴链接...">
+      <input type="text" id="bmTitle" placeholder="标题" style="max-width:200px">
+      <button class="btn btn-primary" onclick="addBookmark()">添加</button>
     </div>
     <div id="bmList"></div>
   `;
   const list = document.getElementById('bmList');
   if (appData.bookmarks.length === 0) {
-    list.innerHTML = `<div class="empty"><div class="icon">馃敄</div><p>鏆傛棤涔︾</p></div>`;
+    list.innerHTML = `<div class="empty"><div class="icon">🔖</div><p>暂无书签</p></div>`;
     return;
   }
   list.innerHTML = appData.bookmarks.map(b => `
     <div class="bookmark-item">
       <a href="${b.url}" target="_blank">${b.title || b.url}</a>
-      <button class="todo-del" onclick="deleteBookmark('${b.id}')">脳</button>
+      <button class="todo-del" onclick="deleteBookmark('${b.id}')">×</button>
     </div>
   `).join('');
 }
@@ -632,12 +632,12 @@ async function deleteBookmark(id) {
 function showAddFolder() {
   document.getElementById('modalContent').classList.remove('fullscreen');
   document.getElementById('modalBody').innerHTML = `
-    <h2>绠＄悊鏂囦欢澶?/h2>
-    <div class="form-group"><input type="text" id="newFolderName" placeholder="鏂板缓鏂囦欢澶瑰悕绉?></div>
-    <button class="btn btn-primary" style="margin-bottom:12px" onclick="addFolder()">鍒涘缓</button>
+    <h2>管理文件夹</h2>
+    <div class="form-group"><input type="text" id="newFolderName" placeholder="新建文件夹名称"></div>
+    <button class="btn btn-primary" style="margin-bottom:12px" onclick="addFolder()">创建</button>
     <div id="folderList"></div>
     <div class="form-row" style="margin-top:16px">
-      <button class="btn btn-secondary" onclick="closeModal()">鍏抽棴</button>
+      <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
     </div>
   `;
   renderFolderList();
@@ -648,13 +648,13 @@ function renderFolderList() {
   const list = document.getElementById('folderList');
   if (!list) return;
   if (appData.folders.length === 0) {
-    list.innerHTML = '<p style="color:#555;font-size:13px">鏆傛棤鏂囦欢澶?/p>';
+    list.innerHTML = '<p style="color:#555;font-size:13px">暂无文件夹</p>';
     return;
   }
   list.innerHTML = appData.folders.map(f => `
     <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #2a2a3a">
-      <span style="flex:1">馃搧 ${f}</span>
-      <button class="btn btn-danger btn-sm" onclick="deleteFolder('${f}')">鍒犻櫎</button>
+      <span style="flex:1">📁 ${f}</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteFolder('${f}')">删除</button>
     </div>
   `).join('');
 }
@@ -662,17 +662,17 @@ function renderFolderList() {
 async function addFolder() {
   const name = document.getElementById('newFolderName').value.trim();
   if (!name) return;
-  if (appData.folders.includes(name)) { toast('鏂囦欢澶瑰凡瀛樺湪'); return; }
+  if (appData.folders.includes(name)) { toast('文件夹已存在'); return; }
   appData.folders.push(name);
   if (await saveData()) {
     document.getElementById('newFolderName').value = '';
     renderFolderList();
-    toast('鏂囦欢澶瑰凡鍒涘缓');
+    toast('文件夹已创建');
   }
 }
 
 async function deleteFolder(name) {
-  if (!confirm(`鍒犻櫎鏂囦欢澶?"${name}"锛焅n鍏朵腑鐨勬ā鍨嬪皢鍙樹负鏈垎绫汇€俙)) return;
+  if (!confirm(`删除文件夹 "${name}"？\n其中的模型将变为未分类。`)) return;
   // Move models out of folder
   models.forEach(m => { if (m.folder === name) m.folder = null; });
   await saveModels();
@@ -680,7 +680,7 @@ async function deleteFolder(name) {
   if (currentFolder === name) currentFolder = null;
   await saveData();
   renderFolderList();
-  toast('鏂囦欢澶瑰凡鍒犻櫎锛屾ā鍨嬪凡绉昏嚦鏈垎绫?);
+  toast('文件夹已删除，模型已移至未分类');
 }
 
 // === Tab Switching ===
@@ -699,16 +699,16 @@ function showLogin() {
   const content = document.getElementById('tabContent');
   content.innerHTML = `
     <div style="max-width:480px;margin:60px auto;text-align:center">
-      <h2 style="color:#7c5cfc;margin-bottom:8px">Marvis 3D 妯″瀷搴?/h2>
-      <p style="color:#888;margin-bottom:24px;font-size:14px">杈撳叆 GitHub Token 浠ュ悓姝ユ暟鎹?/p>
+      <h2 style="color:#7c5cfc;margin-bottom:8px">Marvis 3D 模型库</h2>
+      <p style="color:#888;margin-bottom:24px;font-size:14px">输入 GitHub Token 以同步数据</p>
       <div class="form-group">
         <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="text-align:center;font-size:14px">
       </div>
       <p style="font-size:12px;color:#555;margin-bottom:16px">
-        闇€瑕?<code>repo</code> 鏉冮檺 路 
-        <a href="https://github.com/settings/tokens/new?scopes=repo&description=Marvis%203D" target="_blank" style="color:#7c5cfc">鍒涘缓 Token</a>
+        需要 <code>repo</code> 权限 · 
+        <a href="https://github.com/settings/tokens/new?scopes=repo&description=Marvis%203D" target="_blank" style="color:#7c5cfc">创建 Token</a>
       </p>
-      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;padding:12px">鐧诲綍</button>
+      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;padding:12px">登录</button>
       <p id="loginError" style="color:#ff4757;margin-top:12px;font-size:13px;display:none"></p>
     </div>
   `;
@@ -720,10 +720,10 @@ function showLogin() {
 async function doLogin() {
   const token = document.getElementById('tokenInput').value.trim();
   if (!token) return;
-  showStatus('楠岃瘉涓?..');
+  showStatus('验证中...');
   try {
     const res = await fetch(`${API}/user`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
-    if (!res.ok) throw new Error('Token 鏃犳晥');
+    if (!res.ok) throw new Error('Token 无效');
     const user = await res.json();
     TOKEN = token;
     localStorage.setItem('marvis_gh_token', token);
@@ -733,7 +733,7 @@ async function doLogin() {
   } catch(e) {
     hideStatus();
     document.getElementById('loginError').style.display = 'block';
-    document.getElementById('loginError').textContent = 'Token 鏃犳晥锛岃妫€鏌ュ悗閲嶈瘯';
+    document.getElementById('loginError').textContent = 'Token 无效，请检查后重试';
   }
 }
 
