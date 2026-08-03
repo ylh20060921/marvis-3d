@@ -1,0 +1,776 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marvis 3D 妯″瀷搴?/title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #0f0f14; color: #e0e0e0; min-height: 100vh; }
+.app { max-width: 1400px; margin: 0 auto; padding: 20px; }
+.header { display: flex; align-items: center; gap: 16px; margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid #2a2a3a; }
+.header h1 { font-size: 24px; color: #7c5cfc; white-space: nowrap; }
+.header .subtitle { font-size: 13px; color: #666; }
+.nav { display: flex; gap: 4px; margin-bottom: 20px; background: #1a1a26; border-radius: 10px; padding: 4px; width: fit-content; }
+.nav-btn { padding: 8px 16px; border: none; background: transparent; color: #888; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; white-space: nowrap; }
+.nav-btn:hover { color: #ccc; }
+.nav-btn.active { background: #2a2a40; color: #fff; }
+.toolbar { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; align-items: center; }
+.toolbar input, .toolbar select { padding: 8px 12px; background: #1a1a26; border: 1px solid #2a2a3a; border-radius: 8px; color: #e0e0e0; font-size: 14px; outline: none; }
+.toolbar input:focus { border-color: #7c5cfc; }
+.toolbar input { flex: 1; min-width: 200px; max-width: 400px; }
+.btn { padding: 8px 16px; border: none; border-radius: 8px; cursor: pointer; font-size: 14px; transition: all 0.2s; }
+.btn-primary { background: #7c5cfc; color: #fff; }
+.btn-primary:hover { background: #6a4de6; }
+.btn-secondary { background: #2a2a40; color: #ccc; }
+.btn-secondary:hover { background: #3a3a50; }
+.btn-danger { background: #ff4757; color: #fff; }
+.btn-danger:hover { background: #e8414b; }
+.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.card { background: #1a1a26; border-radius: 12px; overflow: hidden; transition: all 0.2s; cursor: pointer; border: 1px solid #2a2a3a; }
+.card:hover { border-color: #7c5cfc; transform: translateY(-2px); }
+.card-preview { height: 160px; background: #12121a; display: flex; align-items: center; justify-content: center; position: relative; overflow: hidden; }
+.card-preview iframe { width: 100%; height: 100%; border: none; pointer-events: none; }
+.card-preview .placeholder { font-size: 48px; opacity: 0.2; }
+.card-body { padding: 12px; }
+.card-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card-meta { font-size: 12px; color: #666; display: flex; gap: 8px; }
+.card-actions { display: flex; gap: 6px; padding: 0 12px 12px; }
+.card-actions .btn { font-size: 12px; padding: 5px 10px; }
+.empty { text-align: center; padding: 60px 20px; color: #555; }
+.empty .icon { font-size: 64px; margin-bottom: 16px; opacity: 0.2; }
+.upload-area { border: 2px dashed #2a2a3a; border-radius: 12px; padding: 40px; text-align: center; transition: all 0.2s; cursor: pointer; }
+.upload-area:hover, .upload-area.dragover { border-color: #7c5cfc; background: rgba(124,92,252,0.05); }
+.upload-area input { display: none; }
+.modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; align-items: center; justify-content: center; }
+.modal.show { display: flex; }
+.modal-content { background: #1a1a26; border-radius: 12px; padding: 24px; max-width: 90vw; max-height: 90vh; overflow: auto; position: relative; width: 1000px; }
+.modal-content.fullscreen { width: 95vw; height: 95vh; }
+.modal-close { position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; background: #2a2a3a; border: none; border-radius: 8px; color: #ccc; cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center; z-index: 10; }
+.modal-close:hover { background: #ff4757; }
+.modal h2 { margin-bottom: 16px; color: #7c5cfc; }
+.modal iframe { width: 100%; height: 70vh; border: none; border-radius: 8px; background: #0f0f14; }
+.form-group { margin-bottom: 14px; }
+.form-group label { display: block; margin-bottom: 4px; font-size: 13px; color: #888; }
+.form-group input, .form-group select, .form-group textarea { width: 100%; padding: 8px 12px; background: #12121a; border: 1px solid #2a2a3a; border-radius: 8px; color: #e0e0e0; font-size: 14px; outline: none; font-family: inherit; }
+.form-group input:focus, .form-group textarea:focus { border-color: #7c5cfc; }
+.form-group textarea { resize: vertical; min-height: 80px; }
+.form-row { display: flex; gap: 10px; }
+.form-row .btn { flex: 1; }
+.toast { position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%); background: #2a2a40; color: #e0e0e0; padding: 10px 20px; border-radius: 8px; font-size: 14px; z-index: 2000; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.toast.show { opacity: 1; }
+.toast.error { background: #ff4757; }
+.status-bar { position: fixed; top: 0; left: 0; right: 0; background: #7c5cfc; color: #fff; text-align: center; padding: 6px; font-size: 13px; z-index: 3000; display: none; }
+.status-bar.show { display: block; }
+.folder-tree { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+.folder-chip { padding: 6px 14px; background: #1a1a26; border: 1px solid #2a2a3a; border-radius: 20px; cursor: pointer; font-size: 13px; transition: all 0.2s; user-select: none; }
+.folder-chip:hover { border-color: #7c5cfc; }
+.folder-chip.active { background: #7c5cfc; border-color: #7c5cfc; color: #fff; }
+.note-card { background: #1a1a26; border-radius: 12px; padding: 16px; border: 1px solid #2a2a3a; cursor: pointer; transition: all 0.2s; }
+.note-card:hover { border-color: #7c5cfc; }
+.note-card h3 { font-size: 16px; margin-bottom: 8px; }
+.note-card p { font-size: 13px; color: #888; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+.todo-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #1a1a26; border-radius: 8px; margin-bottom: 6px; border: 1px solid #2a2a3a; }
+.todo-item input[type="checkbox"] { width: 18px; height: 18px; accent-color: #7c5cfc; cursor: pointer; }
+.todo-item .todo-text { flex: 1; font-size: 14px; }
+.todo-item .todo-text.done { text-decoration: line-through; color: #555; }
+.todo-item .todo-del { background: none; border: none; color: #555; cursor: pointer; font-size: 16px; padding: 2px 6px; }
+.todo-item .todo-del:hover { color: #ff4757; }
+.bookmark-item { display: flex; align-items: center; gap: 10px; padding: 10px 14px; background: #1a1a26; border-radius: 8px; margin-bottom: 6px; border: 1px solid #2a2a3a; }
+.bookmark-item a { color: #7c5cfc; text-decoration: none; flex: 1; font-size: 14px; word-break: break-all; }
+.bookmark-item a:hover { text-decoration: underline; }
+.loading { text-align: center; padding: 40px; color: #666; }
+@media (max-width: 600px) {
+  .app { padding: 12px; }
+  .grid { grid-template-columns: 1fr; }
+  .header { flex-direction: column; align-items: flex-start; gap: 4px; }
+  .header h1 { font-size: 20px; }
+}
+</style>
+</head>
+<body>
+<div class="status-bar" id="statusBar"></div>
+<div class="app">
+  <div class="header">
+    <h1>Marvis 3D 妯″瀷搴?/h1>
+    <span class="subtitle">鍏变韩 路 棰勮 路 鍗忎綔</span>
+  </div>
+
+  <div class="nav" id="nav">
+    <button class="nav-btn active" data-tab="models">3D 妯″瀷</button>
+    <button class="nav-btn" data-tab="notes">绗旇</button>
+    <button class="nav-btn" data-tab="todos">寰呭姙</button>
+    <button class="nav-btn" data-tab="bookmarks">涔︾</button>
+  </div>
+
+  <div id="tabContent"></div>
+</div>
+
+<div class="modal" id="modal">
+  <div class="modal-content" id="modalContent">
+    <button class="modal-close" onclick="closeModal()">脳</button>
+    <div id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const OWNER = 'ylh20060921';
+const REPO = 'marvis-3d';
+const API = 'https://api.github.com';
+const RAW = 'https://raw.githubusercontent.com';
+
+let TOKEN = '';
+let currentTab = 'models';
+let currentFolder = null;
+let models = [];
+let appData = { notes: [], todos: [], bookmarks: [], folders: [] };
+
+// === GitHub API ===
+async function githubGet(path) {
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${path}`, {
+    headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' }
+  });
+  if (!res.ok) {
+    if (res.status === 404) return null;
+    throw new Error(`GitHub GET ${path}: ${res.status}`);
+  }
+  const data = await res.json();
+  if (Array.isArray(data)) return data; // directory listing
+  const content = atob(data.content.replace(/\n/g, ''));
+  try { return JSON.parse(content); } catch(e) { return content; }
+}
+
+async function githubPut(path, content, sha) {
+  const body = {
+    message: `Update ${path}`,
+    content: btoa(unescape(encodeURIComponent(typeof content === 'string' ? content : JSON.stringify(content, null, 2)))),
+    branch: 'main'
+  };
+  if (sha) body.sha = sha;
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`GitHub PUT ${path}: ${res.status}`);
+  return res.json();
+}
+
+async function githubDelete(path, sha) {
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${path}`, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' },
+    body: JSON.stringify({ message: `Delete ${path}`, sha, branch: 'main' })
+  });
+  if (!res.ok) throw new Error(`GitHub DELETE ${path}: ${res.status}`);
+  return res.json();
+}
+
+// === Data Operations ===
+async function loadData() {
+  showStatus('鍔犺浇涓?..');
+  try {
+    appData = await githubGet('data/app_data.json');
+    if (!appData) {
+      appData = { notes: [], todos: [], bookmarks: [], folders: [] };
+      await githubPut('data/app_data.json', appData);
+    }
+    // ensure fields exist
+    appData.notes = appData.notes || [];
+    appData.todos = appData.todos || [];
+    appData.bookmarks = appData.bookmarks || [];
+    appData.folders = appData.folders || [];
+  } catch(e) {
+    toast('鍔犺浇搴旂敤鏁版嵁澶辫触: ' + e.message, 'error');
+  }
+  hideStatus();
+}
+
+async function saveData() {
+  try {
+    const current = await githubGet('data/app_data.json');
+    const sha = current ? (await fetch(`${API}/repos/${OWNER}/${REPO}/contents/data/app_data.json`, {
+      headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' }
+    }).then(r => r.json())).sha : null;
+    await githubPut('data/app_data.json', appData, sha);
+    return true;
+  } catch(e) {
+    toast('淇濆瓨澶辫触: ' + e.message, 'error');
+    return false;
+  }
+}
+
+async function loadModels() {
+  try {
+    const data = await githubGet('data/models.json');
+    models = data || [];
+  } catch(e) {
+    models = [];
+  }
+}
+
+async function saveModels() {
+  try {
+    const current = await githubGet('data/models.json');
+    let sha = null;
+    if (current) {
+      const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/data/models.json`, {
+        headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' }
+      });
+      if (res.ok) { const j = await res.json(); sha = j.sha; }
+    }
+    await githubPut('data/models.json', models, sha);
+    return true;
+  } catch(e) {
+    toast('淇濆瓨妯″瀷鍒楄〃澶辫触: ' + e.message, 'error');
+    return false;
+  }
+}
+
+// === Upload file ===
+async function uploadFile(file, folder) {
+  const ext = file.name.split('.').pop().toLowerCase();
+  const baseName = file.name.replace(/\.[^.]+$/, '');
+  const safeName = baseName.replace(/[^a-zA-Z0-9\u4e00-\u9fa5_-]/g, '_');
+  const path = `uploads/${Date.now()}_${safeName}.${ext}`;
+  const content = await file.text();
+  const body = {
+    message: `Upload ${file.name}`,
+    content: btoa(unescape(encodeURIComponent(content))),
+    branch: 'main'
+  };
+  const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${path}`, {
+    method: 'PUT',
+    headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' },
+    body: JSON.stringify(body)
+  });
+  if (!res.ok) throw new Error(`Upload failed: ${res.status}`);
+  const model = {
+    id: Date.now().toString(),
+    name: file.name.replace(/\.[^.]+$/, ''),
+    path: path,
+    folder: folder || null,
+    type: ext,
+    size: file.size,
+    created: new Date().toISOString()
+  };
+  models.unshift(model);
+  await saveModels();
+  return model;
+}
+
+// === UI ===
+function showStatus(msg) {
+  const el = document.getElementById('statusBar');
+  el.textContent = msg;
+  el.classList.add('show');
+}
+function hideStatus() { document.getElementById('statusBar').classList.remove('show'); }
+function toast(msg, type) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show ' + (type || '');
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+function closeModal() { document.getElementById('modal').classList.remove('show'); }
+
+// === Models Tab ===
+function renderModels() {
+  const filtered = currentFolder ? models.filter(m => m.folder === currentFolder) : models;
+  const content = document.getElementById('tabContent');
+  const folderChips = appData.folders.map(f =>
+    `<span class="folder-chip${currentFolder === f ? ' active' : ''}" onclick="setFolder('${f}')">${f}</span>`
+  ).join('');
+
+  content.innerHTML = `
+    <div class="toolbar">
+      <input type="text" id="searchInput" placeholder="鎼滅储妯″瀷..." oninput="renderModels()">
+      <button class="btn btn-primary" onclick="showUpload()">涓婁紶妯″瀷</button>
+      <button class="btn btn-secondary" onclick="showAddFolder()">+ 鏂囦欢澶?/button>
+    </div>
+    ${appData.folders.length ? `<div class="folder-tree">
+      <span class="folder-chip${currentFolder === null ? ' active' : ''}" onclick="setFolder(null)">鍏ㄩ儴</span>
+      ${folderChips}
+    </div>` : ''}
+    <div class="grid" id="modelGrid"></div>
+  `;
+
+  const grid = document.getElementById('modelGrid');
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  const filtered2 = q ? filtered.filter(m => m.name.toLowerCase().includes(q)) : filtered;
+
+  if (filtered2.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="icon">馃摝</div><p>鏆傛棤妯″瀷</p></div>`;
+    return;
+  }
+
+  grid.innerHTML = filtered2.map(m => {
+    const rawUrl = `${RAW}/${OWNER}/${REPO}/main/${m.path}`;
+    const sizeStr = m.size ? (m.size < 1024*1024 ? (m.size/1024).toFixed(0)+'KB' : (m.size/1024/1024).toFixed(1)+'MB') : '';
+    return `
+    <div class="card" onclick="previewModel('${m.id}')">
+      <div class="card-preview">
+        <iframe src="${rawUrl}" sandbox="allow-scripts allow-same-origin" loading="lazy"></iframe>
+      </div>
+      <div class="card-body">
+        <div class="card-title">${m.name}</div>
+        <div class="card-meta">
+          <span>${m.type.toUpperCase()}</span>
+          ${sizeStr ? `<span>${sizeStr}</span>` : ''}
+          ${m.folder ? `<span>馃搧 ${m.folder}</span>` : ''}
+        </div>
+      </div>
+      <div class="card-actions" onclick="event.stopPropagation()">
+        <button class="btn btn-secondary btn-sm" onclick="previewModel('${m.id}')">棰勮</button>
+        <button class="btn btn-secondary btn-sm" onclick="showMoveModel('${m.id}')">绉诲姩</button>
+        <button class="btn btn-danger btn-sm" onclick="deleteModel('${m.id}')">鍒犻櫎</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function setFolder(f) { currentFolder = f; renderModels(); }
+
+function showUpload() {
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modalContent');
+  modalContent.classList.remove('fullscreen');
+  document.getElementById('modalBody').innerHTML = `
+    <h2>涓婁紶 3D 妯″瀷</h2>
+    <div class="upload-area" id="uploadArea" onclick="document.getElementById('fileInput').click()">
+      <div style="font-size:48px;margin-bottom:12px;opacity:0.2">馃摛</div>
+      <p>鐐瑰嚮鎴栨嫋鎷?HTML 妯″瀷鏂囦欢</p>
+      <p style="font-size:12px;color:#555;margin-top:8px">鏀寔 .html 鏂囦欢</p>
+      <input type="file" id="fileInput" accept=".html" multiple>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label>鎵€灞炴枃浠跺す</label>
+      <select id="uploadFolder">
+        <option value="">鏃?/option>
+        ${appData.folders.map(f => `<option value="${f}">${f}</option>`).join('')}
+      </select>
+    </div>
+    <div id="uploadProgress" style="margin-top:10px;display:none"></div>
+    <div class="form-row" style="margin-top:16px">
+      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
+    </div>
+  `;
+  modal.classList.add('show');
+
+  const area = document.getElementById('uploadArea');
+  const input = document.getElementById('fileInput');
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+  area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+  area.addEventListener('drop', e => { e.preventDefault(); area.classList.remove('dragover'); handleFiles(e.dataTransfer.files); });
+  input.addEventListener('change', () => handleFiles(input.files));
+}
+
+async function handleFiles(files) {
+  const folder = document.getElementById('uploadFolder').value || null;
+  const progress = document.getElementById('uploadProgress');
+  progress.style.display = 'block';
+
+  for (const file of files) {
+    if (!file.name.endsWith('.html')) continue;
+    progress.textContent = `涓婁紶涓? ${file.name}...`;
+    try {
+      await uploadFile(file, folder);
+    } catch(e) {
+      toast(`${file.name} 涓婁紶澶辫触: ${e.message}`, 'error');
+    }
+  }
+  progress.textContent = `瀹屾垚锛佸叡涓婁紶 ${files.length} 涓枃浠禶;
+  setTimeout(() => { closeModal(); renderModels(); }, 800);
+}
+
+function previewModel(id) {
+  const m = models.find(x => x.id === id);
+  if (!m) return;
+  const rawUrl = `${RAW}/${OWNER}/${REPO}/main/${m.path}`;
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modalContent');
+  modalContent.classList.add('fullscreen');
+  document.getElementById('modalBody').innerHTML = `
+    <h2>${m.name}</h2>
+    <iframe src="${rawUrl}" sandbox="allow-scripts allow-same-origin"></iframe>
+  `;
+  modal.classList.add('show');
+}
+
+async function showMoveModel(id) {
+  const m = models.find(x => x.id === id);
+  if (!m) return;
+  const modal = document.getElementById('modal');
+  const modalContent = document.getElementById('modalContent');
+  modalContent.classList.remove('fullscreen');
+  document.getElementById('modalBody').innerHTML = `
+    <h2>绉诲姩 "${m.name}"</h2>
+    <div class="form-group">
+      <label>鐩爣鏂囦欢澶?/label>
+      <select id="moveFolder">
+        <option value="">鏃?/option>
+        ${appData.folders.map(f => `<option value="${f}" ${m.folder === f ? 'selected' : ''}>${f}</option>`).join('')}
+      </select>
+    </div>
+    <div class="form-row">
+      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
+      <button class="btn btn-primary" onclick="moveModel('${id}')">纭畾</button>
+    </div>
+  `;
+  modal.classList.add('show');
+}
+
+async function moveModel(id) {
+  const m = models.find(x => x.id === id);
+  if (!m) return;
+  m.folder = document.getElementById('moveFolder').value || null;
+  await saveModels();
+  closeModal();
+  renderModels();
+  toast('宸茬Щ鍔?);
+}
+
+async function deleteModel(id) {
+  if (!confirm('纭畾鍒犻櫎姝ゆā鍨嬶紵')) return;
+  const m = models.find(x => x.id === id);
+  if (!m) return;
+  try {
+    const res = await fetch(`${API}/repos/${OWNER}/${REPO}/contents/${m.path}`, {
+      headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' }
+    });
+    if (res.ok) {
+      const j = await res.json();
+      await githubDelete(m.path, j.sha);
+    }
+  } catch(e) { /* file may already not exist */ }
+  models = models.filter(x => x.id !== id);
+  await saveModels();
+  renderModels();
+  toast('宸插垹闄?);
+}
+
+// === Notes Tab ===
+function renderNotes() {
+  const content = document.getElementById('tabContent');
+  content.innerHTML = `
+    <div class="toolbar">
+      <input type="text" id="noteSearch" placeholder="鎼滅储绗旇..." oninput="renderNotes()">
+      <button class="btn btn-primary" onclick="showAddNote()">鏂板缓绗旇</button>
+    </div>
+    <div class="grid" id="noteGrid"></div>
+  `;
+  const grid = document.getElementById('noteGrid');
+  const q = (document.getElementById('noteSearch')?.value || '').toLowerCase();
+  const filtered = q ? appData.notes.filter(n => n.title.toLowerCase().includes(q) || n.content.toLowerCase().includes(q)) : appData.notes;
+
+  if (filtered.length === 0) {
+    grid.innerHTML = `<div class="empty"><div class="icon">馃摑</div><p>鏆傛棤绗旇</p></div>`;
+    return;
+  }
+  grid.innerHTML = filtered.map(n => `
+    <div class="note-card" onclick="showEditNote('${n.id}')">
+      <h3>${n.title || '鏃犳爣棰?}</h3>
+      <p>${n.content || ''}</p>
+      <div style="margin-top:8px;font-size:11px;color:#555">${new Date(n.updated).toLocaleString('zh-CN')}</div>
+    </div>
+  `).join('');
+}
+
+function showAddNote() {
+  document.getElementById('modalContent').classList.remove('fullscreen');
+  document.getElementById('modalBody').innerHTML = `
+    <h2>鏂板缓绗旇</h2>
+    <div class="form-group"><input type="text" id="noteTitle" placeholder="鏍囬"></div>
+    <div class="form-group"><textarea id="noteContent" placeholder="鍐呭..." rows="6"></textarea></div>
+    <div class="form-row">
+      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
+      <button class="btn btn-primary" onclick="saveNote()">淇濆瓨</button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('show');
+}
+
+function showEditNote(id) {
+  const n = appData.notes.find(x => x.id === id);
+  if (!n) return;
+  document.getElementById('modalContent').classList.remove('fullscreen');
+  document.getElementById('modalBody').innerHTML = `
+    <h2>缂栬緫绗旇</h2>
+    <div class="form-group"><input type="text" id="noteTitle" value="${n.title || ''}"></div>
+    <div class="form-group"><textarea id="noteContent" rows="6">${n.content || ''}</textarea></div>
+    <div class="form-row">
+      <button class="btn btn-danger" onclick="deleteNote('${id}')">鍒犻櫎</button>
+      <button class="btn btn-secondary" onclick="closeModal()">鍙栨秷</button>
+      <button class="btn btn-primary" onclick="saveNote('${id}')">淇濆瓨</button>
+    </div>
+  `;
+  document.getElementById('modal').classList.add('show');
+}
+
+async function saveNote(id) {
+  const title = document.getElementById('noteTitle').value.trim();
+  const content = document.getElementById('noteContent').value.trim();
+  if (!title && !content) { toast('鏍囬鎴栧唴瀹逛笉鑳藉叏绌?); return; }
+  if (id) {
+    const n = appData.notes.find(x => x.id === id);
+    if (n) { n.title = title; n.content = content; n.updated = new Date().toISOString(); }
+  } else {
+    appData.notes.unshift({ id: Date.now().toString(), title, content, created: new Date().toISOString(), updated: new Date().toISOString() });
+  }
+  if (await saveData()) { closeModal(); renderNotes(); }
+}
+
+async function deleteNote(id) {
+  if (!confirm('鍒犻櫎姝ょ瑪璁帮紵')) return;
+  appData.notes = appData.notes.filter(x => x.id !== id);
+  await saveData();
+  closeModal();
+  renderNotes();
+}
+
+// === Todos Tab ===
+function renderTodos() {
+  const content = document.getElementById('tabContent');
+  content.innerHTML = `
+    <div class="toolbar">
+      <input type="text" id="todoInput" placeholder="娣诲姞寰呭姙..." onkeydown="if(event.key==='Enter')addTodo()">
+      <button class="btn btn-primary" onclick="addTodo()">娣诲姞</button>
+    </div>
+    <div id="todoList"></div>
+  `;
+  const list = document.getElementById('todoList');
+  const incomplete = appData.todos.filter(t => !t.done);
+  const completed = appData.todos.filter(t => t.done);
+
+  if (appData.todos.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="icon">鉁?/div><p>鏆傛棤寰呭姙</p></div>`;
+    return;
+  }
+  list.innerHTML = incomplete.map(t => `
+    <div class="todo-item">
+      <input type="checkbox" onchange="toggleTodo('${t.id}')">
+      <span class="todo-text">${t.text}</span>
+      <button class="todo-del" onclick="deleteTodo('${t.id}')">脳</button>
+    </div>
+  `).join('') + (completed.length ? `<div style="margin-top:16px;font-size:12px;color:#555">宸插畬鎴?(${completed.length})</div>` + completed.map(t => `
+    <div class="todo-item" style="opacity:0.5">
+      <input type="checkbox" checked onchange="toggleTodo('${t.id}')">
+      <span class="todo-text done">${t.text}</span>
+      <button class="todo-del" onclick="deleteTodo('${t.id}')">脳</button>
+    </div>
+  `).join('') : '');
+}
+
+async function addTodo() {
+  const input = document.getElementById('todoInput');
+  const text = input.value.trim();
+  if (!text) return;
+  appData.todos.unshift({ id: Date.now().toString(), text, done: false, created: new Date().toISOString() });
+  input.value = '';
+  if (await saveData()) renderTodos();
+}
+
+async function toggleTodo(id) {
+  const t = appData.todos.find(x => x.id === id);
+  if (t) t.done = !t.done;
+  await saveData();
+  renderTodos();
+}
+
+async function deleteTodo(id) {
+  appData.todos = appData.todos.filter(x => x.id !== id);
+  await saveData();
+  renderTodos();
+}
+
+// === Bookmarks Tab ===
+function renderBookmarks() {
+  const content = document.getElementById('tabContent');
+  content.innerHTML = `
+    <div class="toolbar">
+      <input type="text" id="bmUrl" placeholder="绮樿创閾炬帴...">
+      <input type="text" id="bmTitle" placeholder="鏍囬" style="max-width:200px">
+      <button class="btn btn-primary" onclick="addBookmark()">娣诲姞</button>
+    </div>
+    <div id="bmList"></div>
+  `;
+  const list = document.getElementById('bmList');
+  if (appData.bookmarks.length === 0) {
+    list.innerHTML = `<div class="empty"><div class="icon">馃敄</div><p>鏆傛棤涔︾</p></div>`;
+    return;
+  }
+  list.innerHTML = appData.bookmarks.map(b => `
+    <div class="bookmark-item">
+      <a href="${b.url}" target="_blank">${b.title || b.url}</a>
+      <button class="todo-del" onclick="deleteBookmark('${b.id}')">脳</button>
+    </div>
+  `).join('');
+}
+
+async function addBookmark() {
+  const url = document.getElementById('bmUrl').value.trim();
+  const title = document.getElementById('bmTitle').value.trim();
+  if (!url) return;
+  appData.bookmarks.unshift({ id: Date.now().toString(), url, title: title || url, created: new Date().toISOString() });
+  if (await saveData()) {
+    document.getElementById('bmUrl').value = '';
+    document.getElementById('bmTitle').value = '';
+    renderBookmarks();
+  }
+}
+
+async function deleteBookmark(id) {
+  appData.bookmarks = appData.bookmarks.filter(x => x.id !== id);
+  await saveData();
+  renderBookmarks();
+}
+
+// === Folders ===
+function showAddFolder() {
+  document.getElementById('modalContent').classList.remove('fullscreen');
+  document.getElementById('modalBody').innerHTML = `
+    <h2>绠＄悊鏂囦欢澶?/h2>
+    <div class="form-group"><input type="text" id="newFolderName" placeholder="鏂板缓鏂囦欢澶瑰悕绉?></div>
+    <button class="btn btn-primary" style="margin-bottom:12px" onclick="addFolder()">鍒涘缓</button>
+    <div id="folderList"></div>
+    <div class="form-row" style="margin-top:16px">
+      <button class="btn btn-secondary" onclick="closeModal()">鍏抽棴</button>
+    </div>
+  `;
+  renderFolderList();
+  document.getElementById('modal').classList.add('show');
+}
+
+function renderFolderList() {
+  const list = document.getElementById('folderList');
+  if (!list) return;
+  if (appData.folders.length === 0) {
+    list.innerHTML = '<p style="color:#555;font-size:13px">鏆傛棤鏂囦欢澶?/p>';
+    return;
+  }
+  list.innerHTML = appData.folders.map(f => `
+    <div style="display:flex;align-items:center;gap:8px;padding:8px 0;border-bottom:1px solid #2a2a3a">
+      <span style="flex:1">馃搧 ${f}</span>
+      <button class="btn btn-danger btn-sm" onclick="deleteFolder('${f}')">鍒犻櫎</button>
+    </div>
+  `).join('');
+}
+
+async function addFolder() {
+  const name = document.getElementById('newFolderName').value.trim();
+  if (!name) return;
+  if (appData.folders.includes(name)) { toast('鏂囦欢澶瑰凡瀛樺湪'); return; }
+  appData.folders.push(name);
+  if (await saveData()) {
+    document.getElementById('newFolderName').value = '';
+    renderFolderList();
+    toast('鏂囦欢澶瑰凡鍒涘缓');
+  }
+}
+
+async function deleteFolder(name) {
+  if (!confirm(`鍒犻櫎鏂囦欢澶?"${name}"锛焅n鍏朵腑鐨勬ā鍨嬪皢鍙樹负鏈垎绫汇€俙)) return;
+  // Move models out of folder
+  models.forEach(m => { if (m.folder === name) m.folder = null; });
+  await saveModels();
+  appData.folders = appData.folders.filter(f => f !== name);
+  if (currentFolder === name) currentFolder = null;
+  await saveData();
+  renderFolderList();
+  toast('鏂囦欢澶瑰凡鍒犻櫎锛屾ā鍨嬪凡绉昏嚦鏈垎绫?);
+}
+
+// === Tab Switching ===
+async function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.querySelector(`[data-tab="${tab}"]`)?.classList.add('active');
+  if (tab === 'models') { await loadModels(); renderModels(); }
+  else if (tab === 'notes') renderNotes();
+  else if (tab === 'todos') renderTodos();
+  else if (tab === 'bookmarks') renderBookmarks();
+}
+
+// === Auth ===
+function showLogin() {
+  const content = document.getElementById('tabContent');
+  content.innerHTML = `
+    <div style="max-width:480px;margin:60px auto;text-align:center">
+      <h2 style="color:#7c5cfc;margin-bottom:8px">Marvis 3D 妯″瀷搴?/h2>
+      <p style="color:#888;margin-bottom:24px;font-size:14px">杈撳叆 GitHub Token 浠ュ悓姝ユ暟鎹?/p>
+      <div class="form-group">
+        <input type="password" id="tokenInput" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxxxxxx" style="text-align:center;font-size:14px">
+      </div>
+      <p style="font-size:12px;color:#555;margin-bottom:16px">
+        闇€瑕?<code>repo</code> 鏉冮檺 路 
+        <a href="https://github.com/settings/tokens/new?scopes=repo&description=Marvis%203D" target="_blank" style="color:#7c5cfc">鍒涘缓 Token</a>
+      </p>
+      <button class="btn btn-primary" onclick="doLogin()" style="width:100%;padding:12px">鐧诲綍</button>
+      <p id="loginError" style="color:#ff4757;margin-top:12px;font-size:13px;display:none"></p>
+    </div>
+  `;
+  document.getElementById('tokenInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+}
+
+async function doLogin() {
+  const token = document.getElementById('tokenInput').value.trim();
+  if (!token) return;
+  showStatus('楠岃瘉涓?..');
+  try {
+    const res = await fetch(`${API}/user`, { headers: { Authorization: `Bearer ${token}`, Accept: 'application/vnd.github+json' } });
+    if (!res.ok) throw new Error('Token 鏃犳晥');
+    const user = await res.json();
+    TOKEN = token;
+    localStorage.setItem('marvis_gh_token', token);
+    hideStatus();
+    await loadData();
+    await switchTab('models');
+  } catch(e) {
+    hideStatus();
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('loginError').textContent = 'Token 鏃犳晥锛岃妫€鏌ュ悗閲嶈瘯';
+  }
+}
+
+function logout() {
+  TOKEN = '';
+  localStorage.removeItem('marvis_gh_token');
+  showLogin();
+}
+
+// === Init ===
+async function init() {
+  document.getElementById('nav').addEventListener('click', e => {
+    if (e.target.classList.contains('nav-btn')) switchTab(e.target.dataset.tab);
+  });
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target === document.getElementById('modal')) closeModal();
+  });
+
+  // Check saved token
+  const saved = localStorage.getItem('marvis_gh_token');
+  if (saved) {
+    TOKEN = saved;
+    try {
+      const res = await fetch(`${API}/user`, { headers: { Authorization: `Bearer ${TOKEN}`, Accept: 'application/vnd.github+json' } });
+      if (res.ok) {
+        await loadData();
+        await switchTab('models');
+        return;
+      }
+    } catch(e) {}
+    TOKEN = '';
+    localStorage.removeItem('marvis_gh_token');
+  }
+  showLogin();
+}
+
+init();
+</script>
+</body>
+</html>
